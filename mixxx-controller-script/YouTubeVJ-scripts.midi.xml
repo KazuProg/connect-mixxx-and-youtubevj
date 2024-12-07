@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+<MixxxControllerPreset mixxxVersion="2.0" schemaVersion="1"> <!-- Schema version number to help compatibility, should the MIDI format change -->
+    <info>
+        <name>YouTubeVJ</name>
+        <author>KazuProg</author>
+        <description>connect to YouTube-VJ</description>
+    </info>
+
+    <controller id="YouTubeVJ">
+        <scriptfiles>
+            <file filename="YouTubeVJ-scripts.js" functionprefix="YouTubeVJ"/>
+        </scriptfiles>
+    </controller>
+</MixxxControllerPreset>

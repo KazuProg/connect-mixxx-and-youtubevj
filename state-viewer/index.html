@@ -1,0 +1,116 @@
+<div style="display: inline-block; background: #0f0">
+  SeekBar：<input
+    type="range"
+    id="ch1_pos"
+    min="0"
+    max="1"
+    step="0.001"
+  /><br />
+  Duration:<span id="ch1_duration"></span><br />
+  Elapsed:<span id="ch1_elapsed"></span><br />
+  Left:<span id="ch1_left"></span><br />
+  Playing：<span id="ch1_playing"></span><br />
+  BPM：<span id="ch1_bpm"></span>(<span id="ch1_rate"></span>%)<br />
+</div>
+X-Fader：<input
+  type="range"
+  id="crossfader"
+  min="-1"
+  max="1"
+  step="0.001"
+/><br />
+<textarea id="debug"></textarea>
+<script>
+  const eventSource = new EventSource("http://localhost:5000/events");
+
+  const DATA = {
+    "[Channel1]": {},
+    "[Channel2]": {},
+    "[Master]": {},
+  };
+
+  eventSource.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    DATA[data.group][data.control] = data.value;
+    console.log(data);
+    if (data.group === "[Channel1]") {
+      switch (data.control) {
+        case "duration":
+          document.querySelector("span#ch1_duration").innerText = formatTime(
+            data.value
+          );
+          break;
+        case "play":
+          document.querySelector("span#ch1_playing").innerText =
+            data.value === 1;
+          if (data.value === 1) {
+            DATA[data.group]._playFrom = +new Date();
+          }
+          break;
+        case "bpm":
+          document.querySelector("span#ch1_bpm").innerText =
+            data.value.toFixed(2);
+          break;
+        case "rate":
+          DATA[data.group]._speed =
+            1 + -DATA[data.group].rateRange * data.value;
+          document.querySelector("span#ch1_rate").innerText = (
+            (DATA[data.group]._speed - 1) *
+            100
+          ).toFixed(2);
+          break;
+      }
+    }
+    if (data.group === "[Master]") {
+      switch (data.control) {
+        case "crossfader":
+          document.querySelector("#crossfader").value = data.value;
+          break;
+      }
+    }
+  };
+
+  eventSource.onerror = (err) => {
+    console.error("SSE Error:", err);
+  };
+
+  updateSeekBar = () => {
+    if ("play" in DATA["[Channel1]"]) {
+      if (DATA["[Channel1]"].play === 1) {
+        const now = new Date();
+        DATA["[Channel1]"].playposition +=
+          (new Date() - DATA["[Channel1]"]._playFrom) /
+          (DATA["[Channel1]"].duration * 1000);
+        if (1 < DATA["[Channel1]"].playposition) {
+          DATA["[Channel1]"].playposition = 1;
+        }
+        DATA["[Channel1]"]._playFrom = now;
+        document.querySelector("#ch1_pos").value =
+          DATA["[Channel1]"].playposition;
+        document.querySelector("#ch1_elapsed").innerText = formatTime(
+          DATA["[Channel1]"].duration * DATA["[Channel1]"].playposition
+        );
+        document.querySelector("#ch1_left").innerText = formatTime(
+          DATA["[Channel1]"].duration * (1 - DATA["[Channel1]"].playposition)
+        );
+      }
+    }
+    document.querySelector("#debug").value = JSON.stringify(DATA, null, 2);
+    requestAnimationFrame(updateSeekBar);
+  };
+  requestAnimationFrame(updateSeekBar);
+
+  function formatTime(sec) {
+    // ミリ秒を含む秒数を分と秒に分割
+    const minutes = Math.floor(sec / 60); // 60,000ミリ秒 = 1分
+    const seconds = Math.floor(sec % 60); // 残りの秒
+    const millis = Math.floor((sec % 1) * 1000); // 残りのミリ秒
+
+    // 2桁の数字としてゼロパディング
+    const formattedMinutes = String(minutes).padStart(2, "0");
+    const formattedSeconds = String(seconds).padStart(2, "0");
+    const formattedMillis = String(millis).padStart(3, "0");
+
+    return `${formattedMinutes}:${formattedSeconds}.${formattedMillis}`;
+  }
+</script>
