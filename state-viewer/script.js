@@ -71,13 +71,11 @@ function onEventSourceMessage(event) {
 function formatTime(sec) {
   const minutes = Math.floor(sec / 60);
   const seconds = Math.floor(sec % 60);
-  const millis = Math.floor((sec % 1) * 1000);
 
   const formattedMinutes = String(minutes).padStart(2, "0");
   const formattedSeconds = String(seconds).padStart(2, "0");
-  const formattedMillis = String(millis).padStart(3, "0");
 
-  return `${formattedMinutes}:${formattedSeconds}.${formattedMillis}`;
+  return `${formattedMinutes}:${formattedSeconds}`;
 }
 
 function DebugView() {
