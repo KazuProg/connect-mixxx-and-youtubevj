@@ -1,0 +1,58 @@
+html {
+  --mixer-width: 180px;
+}
+
+body {
+  margin: 0;
+  background: #333;
+  color: white;
+  display: flex;
+}
+
+body > div {
+  height: 100vh;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+body > div.deck {
+  flex-grow: 1;
+}
+
+body > div.mixer {
+  width: var(--mixer-width);
+  border-left: solid 1px #555;
+  border-right: solid 1px #555;
+}
+
+/**
+ * 各デッキのスタイル
+ */
+.deck .track-time {
+  display: flex;
+  justify-content: space-between;
+}
+
+.deck .timeline {
+  height: 10px;
+  background: #5fa;
+  border-radius: 5px;
+}
+
+.deck .timeline > div {
+  height: 100%;
+  background: #555;
+  border-radius: 4px;
+}
+
+.deck .duration {
+  text-align: right;
+}
+
+textarea#debug {
+  position: fixed;
+  inset: 0;
+  top: 50vh;
+  resize: none;
+  display: none;
+}
