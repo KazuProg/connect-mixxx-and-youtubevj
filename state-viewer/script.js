@@ -8,8 +8,6 @@ window.addEventListener("load", (e) => {
   eventSource.onerror = (err) => {
     console.error("SSE Error:", err);
   };
-
-  requestAnimationFrame(updateTimeline);
 });
 
 const DATA = {
@@ -25,6 +23,8 @@ function onEventSourceMessage(event) {
 
   if (data.group === "[Channel1]" || data.group === "[Channel2]") {
     const ch = parseInt(data.group.substr(-2, 1));
+    const chData = DATA[`[Channel${ch}]`];
+    const deck = document.querySelector(`#ch${ch}`);
 
     switch (data.control) {
       case "duration":
@@ -32,10 +32,18 @@ function onEventSourceMessage(event) {
           data.value
         );
         break;
-      case "play":
-        if (data.value === 1) {
-          DATA[data.group]._playFrom = +new Date();
-        }
+      case "playposition":
+        deck.querySelector(".position").style.width = `${
+          chData.playposition * 100
+        }%`;
+
+        deck.querySelector(".elapsed").innerText = formatTime(
+          chData.duration * chData.playposition
+        );
+
+        deck.querySelector(".remaining").innerText = formatTime(
+          chData.duration * (1 - chData.playposition)
+        );
         break;
       case "bpm":
         document.querySelector(`#ch${ch} .bpm`).innerText =
@@ -60,45 +68,6 @@ function onEventSourceMessage(event) {
   }
 }
 
-function updateTimeline() {
-  const updateChannel = (ch) => {
-    const data = DATA[`[Channel${ch}]`];
-    const deck = document.querySelector(`#ch${ch}`);
-
-    if ("play" in data && data.play === 1) {
-      const now = new Date();
-
-      data.playposition +=
-        (new Date() - data._playFrom) / (data.duration * 1000);
-
-      if (1 < data.playposition) {
-        data.playposition = 1;
-      }
-
-      data._playFrom = now;
-
-      deck.querySelector(".position").style.width = `${
-        data.playposition * 100
-      }%`;
-
-      deck.querySelector(".elapsed").innerText = formatTime(
-        data.duration * data.playposition
-      );
-
-      deck.querySelector(".remaining").innerText = formatTime(
-        data.duration * (1 - data.playposition)
-      );
-    }
-  };
-
-  updateChannel(1);
-  updateChannel(2);
-
-  document.querySelector("#debug").value = JSON.stringify(DATA, null, 2);
-
-  requestAnimationFrame(updateTimeline);
-}
-
 function formatTime(sec) {
   const minutes = Math.floor(sec / 60);
   const seconds = Math.floor(sec % 60);
@@ -113,4 +82,12 @@ function formatTime(sec) {
 
 function DebugView() {
   document.querySelector("#debug").style.display = "block";
+
+  requestAnimationFrame(updateDebugData);
+}
+
+function updateDebugData() {
+  document.querySelector("#debug").value = JSON.stringify(DATA, null, 2);
+
+  requestAnimationFrame(updateDebugData);
 }
