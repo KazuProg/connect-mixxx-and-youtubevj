@@ -1,10 +1,9 @@
-import subprocess
 import threading
 import time
 from flask import Flask, Response, stream_with_context
 from flask_cors import CORS
 
-mixxx_executable = r"C:\Program Files\Mixxx\Mixxx.exe"
+import mixxx
 
 app = Flask(__name__)
 CORS(app)
@@ -12,32 +11,10 @@ CORS(app)
 connected_clients = []
 
 
-def log_reader():
-    """
-    Mixxxの標準エラーログをリアルタイムに読み取り、接続されているクライアントに送信する。
-    """
-    # Mixxxを起動
-    mixxx = subprocess.Popen(
-        [mixxx_executable, "--developer"],
-        stdout=subprocess.PIPE,  # 標準出力も取得（必要に応じて）
-        stderr=subprocess.PIPE,  # 標準エラーを取得
-        bufsize=1,  # 行単位でのバッファリング
-        universal_newlines=True,  # テキストモードで読み込み
-    )
-    try:
-        while True:
-            log_msg = mixxx.stderr.readline().strip()
-
-            if "YouTubeVJ_Message:" in log_msg:
-                message = log_msg.split("YouTubeVJ_Message:", 1)[1].strip()
-                broadcast_message(message)
-
-            if log_msg == "" and mixxx.poll() is not None:
-                break
-    except Exception as e:
-        print(f"Error reading logs: {e}")
-    finally:
-        mixxx.terminate()
+def handle_mixxx_log(log_line):
+    if "YouTubeVJ_Message:" in log_line:
+        message = log_line.split("YouTubeVJ_Message:", 1)[1].strip()
+        broadcast_message(message)
 
 
 def broadcast_message(message):
@@ -84,5 +61,7 @@ def sse():
 
 if __name__ == "__main__":
     # Mixxxログ監視スレッドの開始
-    threading.Thread(target=log_reader, daemon=True).start()
+    threading.Thread(
+        target=mixxx.start_with_log_handler, args=(handle_mixxx_log,), daemon=True
+    ).start()
     app.run()
