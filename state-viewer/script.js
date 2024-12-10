@@ -32,6 +32,8 @@ function onEventSourceMessage(event) {
           data.value.title;
         document.querySelector(`#ch${ch} .track-info .artist`).innerText =
           data.value.artist;
+        document.querySelector(`#ch${ch} .track-info .path`).innerText =
+          data.value.path;
         break;
       case "duration":
         document.querySelector(`#ch${ch} .duration`).innerText = formatTime(

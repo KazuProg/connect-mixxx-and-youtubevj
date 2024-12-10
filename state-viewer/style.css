@@ -28,6 +28,19 @@ body > div.mixer {
 /**
  * 各デッキのスタイル
  */
+.deck .track-info {
+  margin-bottom: 0.5rem;
+}
+
+.deck .title {
+  font-size: 1.5rem;
+}
+
+.deck .path {
+  font-size: 0.7rem;
+  color: #aaa;
+}
+
 .deck .track-time {
   display: flex;
   justify-content: space-between;

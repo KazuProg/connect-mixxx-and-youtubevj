@@ -4,13 +4,14 @@ import time
 from flask import Flask, Response, stream_with_context
 from flask_cors import CORS
 
-from mixxx import MixxxLogHandler, MixxxAutomation
+from mixxx import MixxxLogHandler, MixxxAutomation, MixxxDatabase
 
 app = Flask(__name__)
 CORS(app)
 
 connected_clients = []
 mixxx_automation = None
+mixxx_db = None
 
 
 def handle_mixxx_log(log_line):
@@ -20,14 +21,15 @@ def handle_mixxx_log(log_line):
         data = json.loads(message)
         if data["control"] == "track_loaded":
             channel = data["group"][-2]
+            title = mixxx_automation.get_element_text(f"Deck{channel}_Title")
+            artist = mixxx_automation.get_element_text(f"Deck{channel}_Artist")
             value = {
                 "group": data["group"],
                 "control": "trackinfo",
                 "value": {
-                    "title": mixxx_automation.get_element_text(f"Deck{channel}_Title"),
-                    "artist": mixxx_automation.get_element_text(
-                        f"Deck{channel}_Artist"
-                    ),
+                    "title": title,
+                    "artist": artist,
+                    "path": mixxx_db.search_music_path(artist, title),
                 },
             }
             broadcast_message(json.dumps(value))
@@ -76,9 +78,10 @@ def sse():
 
 
 def start_mixxx_log_handler():
-    global mixxx_automation
+    global mixxx_automation, mixxx_db
     log_handler = MixxxLogHandler()
     mixxx_automation = MixxxAutomation()
+    mixxx_db = MixxxDatabase()
 
     try:
         with log_handler.start_with_log_handler(callback=handle_mixxx_log):
