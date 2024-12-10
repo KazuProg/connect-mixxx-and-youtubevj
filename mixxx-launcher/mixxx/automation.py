@@ -12,26 +12,25 @@ class MixxxAutomation:
 
     Attributes:
         app_title (str): 接続するアプリケーションのタイトル
+        app_window_class_name (str): 接続するアプリケーションのウィンドウクラス名
         mixxx_window (object): Mixxxアプリケーションのウィンドウオブジェクト
         logger (logging.Logger): ログ出力用のロガーオブジェクト
-        AUTOMATION_ELEM (Dict[str, str]): UIエレメントのオートメーションID辞書
+        automation_elems (Dict[str, str]): UIエレメントのオートメーションID辞書
     """
 
-    def __init__(self, app_title: str = "Mixxx"):
+    def __init__(self):
         """
         MixxxAutomationクラスの初期化メソッド。
-
-        Args:
-            app_title (str, optional): 接続するアプリケーションのタイトル。デフォルトは"Mixxx"。
         """
-        self.app_title = app_title
+        self.app_title = "Mixxx"
+        self.app_window_class_name = "MixxxMainWindow"
         self.main_window = None
         self.logger = logging.getLogger(__name__)
         logging.basicConfig(
             level=logging.INFO, format="%(asctime)s - %(levelname)s: %(message)s"
         )
 
-        self.AUTOMATION_ELEM: Dict[str, str] = {
+        self.automation_elems: Dict[str, str] = {
             "Deck1_Title": "Deck1.DeckRows12345.DeckRows234.WidgetGroup.WidgetGroup.DeckRow_2_3_ArtistTitleTime.TitleRow.WidgetGroup.TitleText",
             "Deck1_PlayPosition": "Deck1.DeckRows12345.DeckRows234.WidgetGroup.WidgetGroup.DeckRow_2_3_ArtistTitleTime.TitleRow.AlignRight.PlayPositionText",
             "Deck1_Artist": "Deck1.DeckRows12345.DeckRows234.WidgetGroup.WidgetGroup.DeckRow_2_3_ArtistTitleTime.ArtistRow.WidgetGroup.ArtistText",
@@ -61,9 +60,15 @@ class MixxxAutomation:
         for attempt in range(max_attempts):
             try:
                 app = Application(backend="uia").connect(
-                    title=self.app_title, visible_only=True
+                    title_re=self.app_title,
+                    class_name=self.app_window_class_name,
+                    visible_only=True,
                 )
-                self.main_window = app.window(title=self.app_title, visible_only=True)
+                self.main_window = app.window(
+                    title=self.app_title,
+                    class_name=self.app_window_class_name,
+                    visible_only=True,
+                )
                 self.logger.info("Mixxxアプリケーションに接続しました")
                 return True
             except Exception as e:
@@ -90,12 +95,12 @@ class MixxxAutomation:
         try:
             text_elements = self.main_window.descendants(control_type="Text")
             for elem in text_elements:
-                for key, value in list(self.AUTOMATION_ELEM.items()):
+                for key, value in list(self.automation_elems.items()):
                     if (
                         isinstance(value, str)
                         and value in elem.element_info.automation_id
                     ):
-                        self.AUTOMATION_ELEM[key] = elem
+                        self.automation_elems[key] = elem
             return True
         except Exception as e:
             self.logger.error(f"エレメントの更新中にエラー: {e}")
@@ -115,7 +120,7 @@ class MixxxAutomation:
         if force_update:
             self.update_element_cache()
 
-        element = self.AUTOMATION_ELEM.get(element_id)
+        element = self.automation_elems.get(element_id)
         if element:
             if not isinstance(element, str):
                 try:

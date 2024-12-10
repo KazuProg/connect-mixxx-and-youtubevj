@@ -80,14 +80,23 @@ def sse():
 def start_mixxx_log_handler():
     global mixxx_automation, mixxx_db
     log_handler = MixxxLogHandler()
-    mixxx_automation = MixxxAutomation()
     mixxx_db = MixxxDatabase()
+    threading.Thread(target=init_mixxx_automation, daemon=True).start()
 
     try:
         with log_handler.start_with_log_handler(callback=handle_mixxx_log):
             print("Mixxxが起動し、ログ処理を開始しました...")
     except Exception as e:
         print(f"エラーが発生しました: {e}")
+
+
+def init_mixxx_automation():
+    global mixxx_automation
+    mixxx_automation = MixxxAutomation()
+    is_connected = False
+    while not is_connected:
+        is_connected = mixxx_automation.connect()
+        time.sleep(5)
 
 
 if __name__ == "__main__":
