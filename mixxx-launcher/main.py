@@ -4,7 +4,7 @@ import time
 from flask import Flask, Response, stream_with_context
 from flask_cors import CORS
 
-from mixxx import MixxxLogHandler, MixxxAutomation, MixxxDatabase
+from mixxx import MixxxProcessManager, MixxxAutomation, MixxxDatabase
 
 app = Flask(__name__)
 CORS(app)
@@ -77,29 +77,32 @@ def sse():
             print("Remove")
 
 
-def start_mixxx_log_handler():
+def start_mixxx():
     global mixxx_automation, mixxx_db
-    log_handler = MixxxLogHandler()
+    mixxx_proc = MixxxProcessManager()
+    mixxx_automation = MixxxAutomation()
     mixxx_db = MixxxDatabase()
-    threading.Thread(target=init_mixxx_automation, daemon=True).start()
+
+    mixxx_proc.set_log_callback(handle_mixxx_log)
 
     try:
-        with log_handler.start_with_log_handler(callback=handle_mixxx_log):
+        with mixxx_proc.start():
             print("Mixxxが起動し、ログ処理を開始しました...")
+
+            is_connected = False
+            while not is_connected:
+                is_connected = mixxx_automation.connect()
+                if not is_connected:
+                    time.sleep(5)
+
+            while mixxx_proc.is_process_running():
+                time.sleep(1)
+
     except Exception as e:
         print(f"エラーが発生しました: {e}")
 
 
-def init_mixxx_automation():
-    global mixxx_automation
-    mixxx_automation = MixxxAutomation()
-    is_connected = False
-    while not is_connected:
-        is_connected = mixxx_automation.connect()
-        time.sleep(5)
-
-
 if __name__ == "__main__":
-    # Mixxxログ監視スレッドの開始
-    threading.Thread(target=start_mixxx_log_handler, daemon=True).start()
-    app.run()
+    # Webサーバスレッドの開始
+    threading.Thread(target=app.run, daemon=True).start()
+    start_mixxx()

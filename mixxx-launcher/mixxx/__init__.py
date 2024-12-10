@@ -1,5 +1,5 @@
-from .log_handler import MixxxLogHandler
 from .automation import MixxxAutomation
 from .database import MixxxDatabase
+from .process_manager import MixxxProcessManager
 
-__all__ = ["MixxxLogHandler", "MixxxAutomation", "MixxxDatabase"]
+__all__ = ["MixxxAutomation", "MixxxDatabase", "MixxxProcessManager"]
