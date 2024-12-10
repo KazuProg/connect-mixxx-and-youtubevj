@@ -1,20 +1,37 @@
+import json
 import threading
 import time
 from flask import Flask, Response, stream_with_context
 from flask_cors import CORS
 
 from mixxx import MixxxLogHandler
+from mixxx_automation import MixxxAutomation
 
 app = Flask(__name__)
 CORS(app)
 
 connected_clients = []
+mixxx_automation = None
 
 
 def handle_mixxx_log(log_line):
     if "YouTubeVJ_Message:" in log_line:
         message = log_line.split("YouTubeVJ_Message:", 1)[1].strip()
         broadcast_message(message)
+        data = json.loads(message)
+        if data["control"] == "track_loaded":
+            channel = data["group"][-2]
+            value = {
+                "group": data["group"],
+                "control": "trackinfo",
+                "value": {
+                    "title": mixxx_automation.get_element_text(f"Deck{channel}_Title"),
+                    "artist": mixxx_automation.get_element_text(
+                        f"Deck{channel}_Artist"
+                    ),
+                },
+            }
+            broadcast_message(json.dumps(value))
 
 
 def broadcast_message(message):
@@ -60,7 +77,9 @@ def sse():
 
 
 def start_mixxx_log_handler():
+    global mixxx_automation
     log_handler = MixxxLogHandler()
+    mixxx_automation = MixxxAutomation()
 
     try:
         with log_handler.start_with_log_handler(callback=handle_mixxx_log):

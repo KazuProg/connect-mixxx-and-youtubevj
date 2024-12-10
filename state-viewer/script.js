@@ -27,6 +27,12 @@ function onEventSourceMessage(event) {
     const deck = document.querySelector(`#ch${ch}`);
 
     switch (data.control) {
+      case "trackinfo":
+        document.querySelector(`#ch${ch} .track-info .title`).innerText =
+          data.value.title;
+        document.querySelector(`#ch${ch} .track-info .artist`).innerText =
+          data.value.artist;
+        break;
       case "duration":
         document.querySelector(`#ch${ch} .duration`).innerText = formatTime(
           data.value
