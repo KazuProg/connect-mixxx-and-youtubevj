@@ -4,8 +4,7 @@ import time
 from flask import Flask, Response, stream_with_context
 from flask_cors import CORS
 
-from mixxx import MixxxLogHandler
-from mixxx_automation import MixxxAutomation
+from mixxx import MixxxLogHandler, MixxxAutomation
 
 app = Flask(__name__)
 CORS(app)
