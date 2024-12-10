@@ -3,7 +3,7 @@ import time
 from flask import Flask, Response, stream_with_context
 from flask_cors import CORS
 
-import mixxx
+from mixxx import MixxxLogHandler
 
 app = Flask(__name__)
 CORS(app)
@@ -59,9 +59,17 @@ def sse():
             print("Remove")
 
 
+def start_mixxx_log_handler():
+    log_handler = MixxxLogHandler()
+
+    try:
+        with log_handler.start_with_log_handler(callback=handle_mixxx_log):
+            print("Mixxxが起動し、ログ処理を開始しました...")
+    except Exception as e:
+        print(f"エラーが発生しました: {e}")
+
+
 if __name__ == "__main__":
     # Mixxxログ監視スレッドの開始
-    threading.Thread(
-        target=mixxx.start_with_log_handler, args=(handle_mixxx_log,), daemon=True
-    ).start()
+    threading.Thread(target=start_mixxx_log_handler, daemon=True).start()
     app.run()
