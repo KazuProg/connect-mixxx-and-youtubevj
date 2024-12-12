@@ -25,12 +25,15 @@ def handle_mixxx_log(log_line):
             artist = mixxx_automation.get_element_text(f"Deck{channel}_Artist")
             path = None
 
-            if title[-1] == "…":
-                title = title.replace("…", "%")
-            if artist[-1] == "…":
-                artist = artist.replace("…", "%")
+            q_title = title
+            if len(title) != 0 and title[-1] == "…":
+                q_title = title.replace("…", "%")
 
-            music_id = mixxx_db.search_music(artist, title, like_search=True)
+            q_artist = artist
+            if len(artist) != 0 and artist[-1] == "…":
+                q_artist = artist.replace("…", "%")
+
+            music_id = mixxx_db.search_music(q_artist, q_title, like_search=True)
             if music_id:
                 title = mixxx_db.get_title(music_id)
                 artist = mixxx_db.get_artist(music_id)

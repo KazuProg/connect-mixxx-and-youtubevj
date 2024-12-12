@@ -57,16 +57,20 @@ class MixxxDatabase:
                     query = """
                     SELECT id
                     FROM library
-                    WHERE title LIKE ? AND artist LIKE ?
+                    WHERE title LIKE ?
+                      AND ( ? = "" and artist IS NULL
+                         OR artist LIKE ?)
                     """
                 else:
                     query = """
                     SELECT id
                     FROM library
-                    WHERE title = ? AND artist = ?
+                    WHERE title = ?
+                      AND ( ? = "" and artist IS NULL
+                         OR artist = ?)
                     """
 
-                cursor.execute(query, (title, artist))
+                cursor.execute(query, (title, artist, artist))
 
                 rows = cursor.fetchall()
 
