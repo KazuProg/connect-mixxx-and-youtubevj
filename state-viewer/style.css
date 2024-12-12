@@ -1,71 +1,109 @@
+:root {
+  --bg-color: #333; /* 背景色 */
+  --accent-bg-color: #354; /* 背景色 */
+  --text-color: #fff; /* 通常の文字色 */
+  --muted-text-color: #aaa; /* 目立たない文字色 */
+  --accent-color: #5fa; /* アクティブカラー */
+  --border-color: #555; /* 通常の枠線色 */
+}
+
 html {
   --mixer-width: 180px;
 }
 
 body {
   margin: 0;
-  background: #333;
-  color: white;
+  background: var(--bg-color);
+  color: var(--text-color);
   display: flex;
+  flex-direction: column; /* 縦方向に要素を配置 */
 }
 
-body > div {
-  height: 100vh;
-  padding: 10px;
+.deck {
+  padding: 10px 0;
   box-sizing: border-box;
-}
-
-body > div.deck {
-  flex-grow: 1;
-}
-
-body > div.mixer {
-  width: var(--mixer-width);
-  border-left: solid 1px #555;
-  border-right: solid 1px #555;
-}
-
-/**
- * 各デッキのスタイル
- */
-.deck .track-info {
-  margin-bottom: 0.5rem;
-}
-
-.deck .title {
-  font-size: 1.5rem;
-}
-
-.deck .path {
-  font-size: 0.7rem;
-  color: #aaa;
-}
-
-.deck .track-time {
   display: flex;
-  justify-content: space-between;
+  border-bottom: 1px solid #cccccc;
 }
 
-.deck .timeline {
-  height: 10px;
-  background: #5fa;
-  border-radius: 5px;
+.deck > *:not(:last-child) {
+  border-right: 1px solid #cccccc;
 }
 
-.deck .timeline > div {
+.deck > .channel {
+  width: 100px;
+  display: grid;
+  place-content: center;
+  font-size: 2rem;
+}
+
+.deck > .bpm-info {
+  width: 100px;
+  display: grid;
+  place-content: center;
+  text-align: center;
+}
+
+.deck > .bpm-info .bpm {
+  font-size: 2rem;
+}
+
+.deck > .bpm-info .bpm-rate {
+  font-size: 1rem;
+}
+
+.deck > .track-info {
+  flex: 1;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.deck > .track-info > .play-position {
+  position: absolute;
   height: 100%;
-  background: #555;
-  border-radius: 4px;
+  z-index: -1;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--accent-bg-color) 50%,
+    transparent
+  );
 }
 
-.deck .duration {
-  text-align: right;
+.deck > .track-info > .text {
+  padding-left: 10px;
 }
 
-textarea#debug {
-  position: fixed;
-  inset: 0;
-  top: 50vh;
-  resize: none;
-  display: none;
+.deck > .track-info > .text > *:empty::before {
+  content: "\00a0";
+}
+
+.deck > .track-info > .text > .title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-color);
+}
+
+.deck > .track-info > .text > .artist {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-color);
+}
+
+.deck > .track-info > .text > .path {
+  font-size: 0.7rem;
+  color: var(--muted-text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  direction: rtl;
+  text-align: left;
+}
+
+.deck > .track-info > .text > .time {
+  margin-top: 0.5rem;
 }

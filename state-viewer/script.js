@@ -33,7 +33,8 @@ function onEventSourceMessage(event) {
         document.querySelector(`#ch${ch} .track-info .artist`).innerText =
           data.value.artist;
         document.querySelector(`#ch${ch} .track-info .path`).innerText =
-          data.value.path;
+          (data.value.path || "").split("\\").at(-1) ||
+          "Failed to find filepath";
         break;
       case "duration":
         document.querySelector(`#ch${ch} .duration`).innerText = formatTime(
@@ -41,7 +42,7 @@ function onEventSourceMessage(event) {
         );
         break;
       case "playposition":
-        deck.querySelector(".position").style.width = `${
+        deck.querySelector(".play-position").style.width = `${
           chData.playposition * 100
         }%`;
 
@@ -55,14 +56,15 @@ function onEventSourceMessage(event) {
         break;
       case "bpm":
         document.querySelector(`#ch${ch} .bpm`).innerText =
-          data.value.toFixed(2);
+          data.value.toFixed(1);
         break;
       case "rate":
         DATA[data.group]._speed = 1 + -DATA[data.group].rateRange * data.value;
-        document.querySelector(`#ch${ch} .bpm-rate`).innerText = (
-          (DATA[data.group]._speed - 1) *
-          100
-        ).toFixed(2);
+        document.querySelector(`#ch${ch} .bpm-rate`).innerText =
+          formatNumber((DATA[data.group]._speed - 1) * 100, {
+            sign: true,
+            fractionDigits: 2,
+          }) + "%";
         break;
     }
   }
@@ -70,7 +72,14 @@ function onEventSourceMessage(event) {
   if (data.group === "[Master]") {
     switch (data.control) {
       case "crossfader":
-        document.querySelector("#crossfader").value = data.value;
+        document.querySelector("#ch1 .channel span").style.opacity = Math.min(
+          1,
+          1 - data.value
+        );
+        document.querySelector("#ch2 .channel span").style.opacity = Math.min(
+          1,
+          1 + data.value
+        );
         break;
     }
   }
@@ -86,14 +95,13 @@ function formatTime(sec) {
   return `${formattedMinutes}:${formattedSeconds}`;
 }
 
-function DebugView() {
-  document.querySelector("#debug").style.display = "block";
-
-  requestAnimationFrame(updateDebugData);
-}
-
-function updateDebugData() {
-  document.querySelector("#debug").value = JSON.stringify(DATA, null, 2);
-
-  requestAnimationFrame(updateDebugData);
+function formatNumber(num, option = {}) {
+  option = {
+    sign: false,
+    fractionDigits: 0,
+    ...option,
+  };
+  const sign = option.sign ? (num >= 0 ? "+" : "") : "";
+  num = num.toFixed(option.fractionDigits);
+  return `${sign}${num}`;
 }

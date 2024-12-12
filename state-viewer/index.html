@@ -9,48 +9,50 @@
 
   <body>
     <div class="deck" id="ch1">
+      <div class="channel"><span>#1</span></div>
+      <div class="bpm-info">
+        <div>
+          <span class="bpm">---</span><br />
+          <span class="bpm-rate">---</span>
+        </div>
+      </div>
       <div class="track-info">
-        <span class="title"></span><br />
-        <span class="artist"></span><br />
-        <span class="path"></span>
+        <div class="play-position"></div>
+        <div class="text">
+          <div class="title">Title</div>
+          <div class="artist">Artist</div>
+          <div class="path">Path</div>
+          <div class="time">
+            <span class="elapsed">00:00</span>&nbsp;/&nbsp;<span
+              class="duration"
+              >00:00</span
+            >&nbsp;(-<span class="remaining">00:00</span>)
+          </div>
+        </div>
       </div>
-      <div class="track-time">
-        <span class="elapsed">00:00</span>
-        <span class="remaining">00:00</span>
-      </div>
-      <div class="timeline">
-        <div class="position"></div>
-      </div>
-      <div class="duration">00:00</div>
-      BPM：<span class="bpm">---</span>(<span class="bpm-rate">---</span
-      >%)<br />
-    </div>
-    <div class="mixer">
-      X-Fader：<input
-        type="range"
-        id="crossfader"
-        min="-1"
-        max="1"
-        step="0.001"
-      />
     </div>
     <div class="deck" id="ch2">
+      <div class="channel"><span>#2</span></div>
+      <div class="bpm-info">
+        <div>
+          <span class="bpm">---</span><br />
+          <span class="bpm-rate">---</span>
+        </div>
+      </div>
       <div class="track-info">
-        <span class="title"></span><br />
-        <span class="artist"></span><br />
-        <span class="path"></span>
+        <div class="play-position"></div>
+        <div class="text">
+          <div class="title">Title</div>
+          <div class="artist">Artist</div>
+          <div class="path">Path</div>
+          <div class="time">
+            <span class="elapsed">00:00</span>&nbsp;/&nbsp;<span
+              class="duration"
+              >00:00</span
+            >&nbsp;(-<span class="remaining">00:00</span>)
+          </div>
+        </div>
       </div>
-      <div class="track-time">
-        <span class="elapsed">00:00</span>
-        <span class="remaining">00:00</span>
-      </div>
-      <div class="timeline">
-        <div class="position"></div>
-      </div>
-      <div class="duration">00:00</div>
-      BPM：<span class="bpm">---</span>(<span class="bpm-rate">---</span
-      >%)<br />
     </div>
-    <textarea id="debug"></textarea>
   </body>
 </html>
