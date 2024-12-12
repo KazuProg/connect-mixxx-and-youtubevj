@@ -23,13 +23,26 @@ def handle_mixxx_log(log_line):
             channel = data["group"][-2]
             title = mixxx_automation.get_element_text(f"Deck{channel}_Title")
             artist = mixxx_automation.get_element_text(f"Deck{channel}_Artist")
+            path = None
+
+            if title[-1] == "…":
+                title = title.replace("…", "%")
+            if artist[-1] == "…":
+                artist = artist.replace("…", "%")
+
+            music_id = mixxx_db.search_music(artist, title, like_search=True)
+            if music_id:
+                title = mixxx_db.get_title(music_id)
+                artist = mixxx_db.get_artist(music_id)
+                path = mixxx_db.get_location(music_id)
+
             value = {
                 "group": data["group"],
                 "control": "trackinfo",
                 "value": {
                     "title": title,
                     "artist": artist,
-                    "path": mixxx_db.search_music_path(artist, title),
+                    "path": path,
                 },
             }
             broadcast_message(json.dumps(value))

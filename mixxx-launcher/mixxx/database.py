@@ -31,16 +31,19 @@ class MixxxDatabase:
         user_profile = os.environ.get("USERPROFILE")
         return os.path.join(user_profile, "AppData", "Local", "Mixxx", "mixxxdb.sqlite")
 
-    def search_music_path(self, artist: str, title: str) -> Optional[str]:
+    def search_music(
+        self, artist: str, title: str, like_search: bool = False
+    ) -> Optional[int]:
         """
-        Mixxxデータベース内で特定の音楽トラックのファイルパスを検索します。
+        Mixxxデータベース内で特定の音楽トラックを検索します。
 
         Args:
             artist (str): アーティスト名
             title (str): トラックのタイトル
+            like_search (bool): 正規表現検索
 
         Returns:
-            Optional[str]: トラックが見つかった場合はファイルパス、見つからない場合はNone
+            Optional[int]: トラックが見つかった場合はライブラリID、見つからない場合はNone
         """
         if not os.path.exists(self.db_path):
             print(f"データベースが存在しません: {self.db_path}")
@@ -50,12 +53,19 @@ class MixxxDatabase:
             with sqlite3.connect(self.db_path) as connection:
                 cursor = connection.cursor()
 
-                query = """
-                SELECT track_locations.location 
-                FROM library 
-                JOIN track_locations ON library.id = track_locations.id 
-                WHERE title = ? AND artist = ?
-                """
+                if like_search:
+                    query = """
+                    SELECT id
+                    FROM library
+                    WHERE title LIKE ? AND artist LIKE ?
+                    """
+                else:
+                    query = """
+                    SELECT id
+                    FROM library
+                    WHERE title = ? AND artist = ?
+                    """
+
                 cursor.execute(query, (title, artist))
 
                 rows = cursor.fetchall()
@@ -66,39 +76,97 @@ class MixxxDatabase:
             print(f"SQLiteエラーが発生しました: {e}")
             return None
 
-    def search_all_tracks_by_artist(self, artist: str) -> List[str]:
+    def get_title(self, library_id: int) -> Optional[str]:
         """
-        Mixxxデータベースから特定のアーティストのすべてのトラックを検索します。
+        Mixxxデータベース内で特定の音楽トラックのタイトルを取得します。
 
         Args:
-            artist (str): アーティスト名
+            library_id (int): ライブラリID
 
         Returns:
-            List[str]: 指定されたアーティストのトラックのファイルパスのリスト
+            Optional[str]: トラックが存在する場合は曲名、見つからない場合はNone
         """
         if not os.path.exists(self.db_path):
             print(f"データベースが存在しません: {self.db_path}")
-            return []
+            return None
+
+        try:
+            with sqlite3.connect(self.db_path) as connection:
+                cursor = connection.cursor()
+
+                query = "SELECT title FROM library WHERE id = ?"
+                cursor.execute(query, (library_id,))
+
+                rows = cursor.fetchall()
+
+                return rows[0][0] if rows else None
+
+        except sqlite3.Error as e:
+            print(f"SQLiteエラーが発生しました: {e}")
+            return None
+
+    def get_artist(self, library_id: int) -> Optional[str]:
+        """
+        Mixxxデータベース内で特定の音楽トラックのアーティストを取得します。
+
+        Args:
+            library_id (int): ライブラリID
+
+        Returns:
+            Optional[str]: トラックが存在する場合はアーティスト名、見つからない場合はNone
+        """
+        if not os.path.exists(self.db_path):
+            print(f"データベースが存在しません: {self.db_path}")
+            return None
+
+        try:
+            with sqlite3.connect(self.db_path) as connection:
+                cursor = connection.cursor()
+
+                query = "SELECT artist FROM library WHERE id = ?"
+                cursor.execute(query, (library_id,))
+
+                rows = cursor.fetchall()
+
+                return rows[0][0] if rows else None
+
+        except sqlite3.Error as e:
+            print(f"SQLiteエラーが発生しました: {e}")
+            return None
+
+    def get_location(self, library_id: int) -> Optional[str]:
+        """
+        Mixxxデータベース内で特定の音楽トラックのファイルパスを検索します。
+
+        Args:
+            library_id (int): ライブラリID
+
+        Returns:
+            Optional[str]: トラックが存在する場合はファイルパス、見つからない場合はNone
+        """
+        if not os.path.exists(self.db_path):
+            print(f"データベースが存在しません: {self.db_path}")
+            return None
 
         try:
             with sqlite3.connect(self.db_path) as connection:
                 cursor = connection.cursor()
 
                 query = """
-                SELECT track_locations.location 
-                FROM library 
-                JOIN track_locations ON library.id = track_locations.id 
-                WHERE artist = ?
+                SELECT track_locations.location
+                FROM library
+                JOIN track_locations ON library.location = track_locations.id 
+                WHERE library.id = ?
                 """
-                cursor.execute(query, (artist,))
+                cursor.execute(query, (library_id,))
 
                 rows = cursor.fetchall()
 
-                return [row[0] for row in rows]
+                return rows[0][0] if rows else None
 
         except sqlite3.Error as e:
             print(f"SQLiteエラーが発生しました: {e}")
-            return []
+            return None
 
 
 def main():
