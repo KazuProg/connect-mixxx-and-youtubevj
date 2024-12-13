@@ -5,6 +5,7 @@ from flask import Flask, Response, stream_with_context
 from flask_cors import CORS
 
 from mixxx import MixxxProcessManager, MixxxAutomation, MixxxDatabase
+from files import AudioFile
 
 app = Flask(__name__)
 CORS(app)
@@ -24,6 +25,7 @@ def handle_mixxx_log(log_line):
             title = mixxx_automation.get_element_text(f"Deck{channel}_Title")
             artist = mixxx_automation.get_element_text(f"Deck{channel}_Artist")
             path = None
+            youtube_id = None
 
             q_title = title
             if len(title) != 0 and title[-1] == "…":
@@ -38,6 +40,9 @@ def handle_mixxx_log(log_line):
                 title = mixxx_db.get_title(music_id)
                 artist = mixxx_db.get_artist(music_id)
                 path = mixxx_db.get_location(music_id)
+                if path is not None:
+                    audio = AudioFile(path)
+                    youtube_id = audio.get_tag("YouTubeID")
 
             value = {
                 "group": data["group"],
@@ -46,6 +51,7 @@ def handle_mixxx_log(log_line):
                     "title": title,
                     "artist": artist,
                     "path": path,
+                    "youtube_id": youtube_id,
                 },
             }
             broadcast_message(json.dumps(value))
