@@ -17,3 +17,7 @@ Mixxx を開発者モードで起動させ、`mixxx-controller-script`のデバ�
 ## state-viewer
 
 `mixxx-launcher`から SSE を受信し、ブラウザに現在の情報を表示させるだけ
+
+## chrome-extension
+
+`YouTube-VJ`と連携させる Chrome 拡張機能
