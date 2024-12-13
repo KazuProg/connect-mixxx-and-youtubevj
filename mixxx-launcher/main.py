@@ -21,47 +21,53 @@ def handle_mixxx_log(log_line):
         broadcast_message(message)
         data = json.loads(message)
         if data["control"] == "track_loaded":
-            channel = data["group"][-2]
-            title = mixxx_automation.get_element_text(f"Deck{channel}_Title")
-            artist = mixxx_automation.get_element_text(f"Deck{channel}_Artist")
-            path = None
-            youtube_id = None
+            threading.Thread(
+                target=load_track_details, args=(data["group"],), daemon=True
+            ).start()
 
-            q_title = title
-            if len(title) != 0 and title[-1] == "…":
-                q_title = title.replace("…", "%")
 
-            q_artist = artist
-            if len(artist) != 0 and artist[-1] == "…":
-                q_artist = artist.replace("…", "%")
+def load_track_details(group):
+    channel = group[-2]
+    title = mixxx_automation.get_element_text(f"Deck{channel}_Title")
+    artist = mixxx_automation.get_element_text(f"Deck{channel}_Artist")
+    path = None
+    youtube_id = None
 
-            music_id = mixxx_db.search_music(q_artist, q_title, like_search=True)
-            if music_id:
-                title = mixxx_db.get_title(music_id)
-                artist = mixxx_db.get_artist(music_id)
-                path = mixxx_db.get_location(music_id)
-                if path is not None:
-                    audio = AudioFile(path)
-                    youtube_id = audio.get_tag("YouTubeID")
+    q_title = title
+    if len(title) != 0 and title[-1] == "…":
+        q_title = title.replace("…", "%")
 
-            value = {
-                "group": data["group"],
-                "control": "trackinfo",
-                "value": {
-                    "title": title,
-                    "artist": artist,
-                    "path": path,
-                    "youtube_id": youtube_id,
-                },
-            }
-            broadcast_message(json.dumps(value))
+    q_artist = artist
+    if len(artist) != 0 and artist[-1] == "…":
+        q_artist = artist.replace("…", "%")
+
+    music_id = mixxx_db.search_music(q_artist, q_title, like_search=True)
+    if music_id:
+        title = mixxx_db.get_title(music_id)
+        artist = mixxx_db.get_artist(music_id)
+        path = mixxx_db.get_location(music_id)
+        if path is not None:
+            audio = AudioFile(path)
+            youtube_id = audio.get_tag("YouTubeID")
+
+    value = {
+        "group": group,
+        "control": "trackinfo",
+        "value": {
+            "title": title,
+            "artist": artist,
+            "path": path,
+            "youtube_id": youtube_id,
+        },
+    }
+    broadcast_message(json.dumps(value))
 
 
 def broadcast_message(message):
     """
     接続中の全てのクライアントにメッセージを送信する。
     """
-    print(message)
+    # print(message)
     for client in connected_clients[:]:  # クライアントリストを安全に反復
         try:
             client["queue"].append(f"data: {message}\n\n")
