@@ -42,8 +42,7 @@ function onEventSourceMessage(event) {
       case "playposition":
         const pos = chData.duration * chData.playposition;
 
-        playerTime = targetCh.currentTime;
-        if (0.1 < Math.abs(pos - playerTime)) {
+        if (0.1 < Math.abs(pos - targetCh.currentTime)) {
           targetCh.resumePreview();
           targetCh.setTime(pos);
         }
