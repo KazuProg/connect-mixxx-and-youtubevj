@@ -1,13 +1,13 @@
 import json
 import threading
 import time
-from flask import Flask, Response, stream_with_context
+from flask import Flask, Response, send_from_directory, stream_with_context
 from flask_cors import CORS
 
 from mixxx import MixxxProcessManager, MixxxAutomation, MixxxDatabase
 from files import AudioFile
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="html")
 CORS(app)
 
 connected_clients = []
@@ -105,6 +105,27 @@ def sse():
             print("Remove")
 
 
+# それ以外のすべてのルートでhtmlディレクトリのファイルを提供
+@app.route("/<path:path>", methods=["GET"])
+def serve_static_file(path):
+    return send_from_directory(app.static_folder, path)
+
+
+# デフォルトでindex.htmlを返す場合（ルートや存在しないファイルにアクセスされた場合）
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def catch_all(path):
+    try:
+        return send_from_directory(app.static_folder, path)
+    except:
+        # ファイルが見つからない場合、index.htmlを返す
+        return send_from_directory(app.static_folder, "index.html")
+
+
+def run_server():
+    app.run(host="0.0.0.0", port=5000)
+
+
 def start_mixxx():
     global mixxx_automation, mixxx_db
     mixxx_proc = MixxxProcessManager()
@@ -132,5 +153,5 @@ def start_mixxx():
 
 if __name__ == "__main__":
     # Webサーバスレッドの開始
-    threading.Thread(target=app.run, daemon=True).start()
+    threading.Thread(target=run_server, daemon=True).start()
     start_mixxx()

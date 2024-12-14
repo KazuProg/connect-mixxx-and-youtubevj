@@ -1,7 +1,7 @@
 "use strict";
 
 window.addEventListener("load", (e) => {
-  const eventSource = new EventSource("http://localhost:5000/events");
+  const eventSource = new EventSource(`${location.origin}/events`);
 
   eventSource.onmessage = onEventSourceMessage;
 
