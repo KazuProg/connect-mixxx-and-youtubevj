@@ -14,10 +14,8 @@ loopMIDI をインストールし、loopMIDI デバイスの Mapping として�
 
 Mixxx を開発者モードで起動させ、`mixxx-controller-script`のデバッグ出力を SSE（Server-Sent Events）でクライアントへ送信
 
+また、YouTube-VJ をプロキシし、連携スクリプトを挿入している
+
 ## state-viewer
 
 `mixxx-launcher`から SSE を受信し、ブラウザに現在の情報を表示させるだけ
-
-## chrome-extension
-
-`YouTube-VJ`と連携させる Chrome 拡張機能

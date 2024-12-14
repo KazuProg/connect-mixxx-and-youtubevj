@@ -1,14 +1,14 @@
 "use strict";
 
-console.log("Mixxx connector loaded!");
+window.addEventListener("load", (e) => {
+  const eventSource = new EventSource(`${location.origin}/events`);
 
-const eventSource = new EventSource("http://localhost:5000/events");
+  eventSource.onmessage = onEventSourceMessage;
 
-eventSource.onmessage = onEventSourceMessage;
-
-eventSource.onerror = (err) => {
-  console.error("SSE Error:", err);
-};
+  eventSource.onerror = (err) => {
+    console.error("SSE Error:", err);
+  };
+});
 
 const DATA = {
   "[Channel1]": {},
@@ -29,6 +29,7 @@ function onEventSourceMessage(event) {
     switch (data.control) {
       case "trackinfo":
         targetCh.setVideo(data.value.youtube_id);
+        targetCh.mute();
         break;
       case "play":
         if (data.value == 1) {

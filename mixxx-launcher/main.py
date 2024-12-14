@@ -1,7 +1,8 @@
 import json
+import requests
 import threading
 import time
-from flask import Flask, Response, send_from_directory, stream_with_context
+from flask import Flask, request, Response, send_from_directory, stream_with_context
 from flask_cors import CORS
 
 from mixxx import MixxxProcessManager, MixxxAutomation, MixxxDatabase
@@ -103,6 +104,44 @@ def sse():
         if client in connected_clients:
             # connected_clients.remove(client)
             print("Remove")
+
+
+@app.route("/youtube-vj/", defaults={"subpath": ""})
+@app.route("/youtube-vj/<path:subpath>")
+def proxy(subpath):
+    proxied_url = f"https://kazuprog.github.io/youtube-vj/{subpath}"
+
+    headers = {key: value for key, value in request.headers if key != "Host"}
+    data = request.get_data()
+
+    try:
+        proxied_response = requests.request(
+            method=request.method,
+            url=proxied_url,
+            allow_redirects=False,
+        )
+    except requests.RequestException as e:
+        return f"Error occurred: {e}", 500
+
+    essential_headers = {
+        key: value
+        for key, value in proxied_response.headers.items()
+        if key in ["Content-Type", "Content-Length"]
+    }
+
+    content = proxied_response.content
+    if subpath == "":
+        content = content.decode(proxied_response.encoding or "utf-8").replace(
+            "</head>",
+            f'  <script src="/mixxx-connector.js"></script>\n  </head>',
+        )
+
+    response = Response(
+        content,
+        status=proxied_response.status_code,
+        headers=essential_headers,
+    )
+    return response
 
 
 # それ以外のすべてのルートでhtmlディレクトリのファイルを提供
