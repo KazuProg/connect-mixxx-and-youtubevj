@@ -49,7 +49,7 @@ def load_track_details(group):
         path = mixxx_db.get_location(music_id)
         if path is not None:
             audio = AudioFile(path)
-            youtube_id = audio.get_tag("YouTubeID")
+            youtube_id = audio.get_tag("YouTubeID", True)
 
     value = {
         "group": group,

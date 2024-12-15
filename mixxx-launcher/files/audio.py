@@ -39,17 +39,29 @@ class AudioFile:
         """
         self.tags = self._parse_frames_to_dict()
 
-    def get_tag(self, key: str):
+    def get_tag(self, key: str, case_insensitive: bool = False):
         """
         指定されたタグキーの値を取得します。
 
         Args:
             key (str): 取得するタグのキー。
+            case_insensitive (bool): Trueの場合、大文字小文字を区別せずに検索します。
 
         Returns:
             str or None: タグの値。キーが存在しない場合はNone。
         """
-        return self.tags.get(key)
+        if case_insensitive:
+            normalized_key = key.lower()
+            return next(
+                (
+                    value
+                    for k, value in self.tags.items()
+                    if k.lower() == normalized_key
+                ),
+                None,
+            )
+        else:
+            return self.tags.get(key)
 
     def has_tag(self, key: str) -> bool:
         """
