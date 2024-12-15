@@ -2,7 +2,14 @@ import json
 import requests
 import threading
 import time
-from flask import Flask, request, Response, send_from_directory, stream_with_context
+from flask import (
+    Flask,
+    request,
+    Response,
+    send_file,
+    send_from_directory,
+    stream_with_context,
+)
 from flask_cors import CORS
 
 from mixxx import MixxxProcessManager, MixxxAutomation, MixxxDatabase
@@ -109,6 +116,13 @@ def sse():
 @app.route("/youtube-vj/", defaults={"subpath": ""})
 @app.route("/youtube-vj/<path:subpath>")
 def proxy(subpath):
+    if subpath == "assets/js/projection.js":
+        return send_file("./html/projection.js", mimetype="text/javascript")
+
+    # コントローラー画面は不要とする
+    if subpath == "":
+        subpath = "projection.html"
+
     proxied_url = f"https://kazuprog.github.io/youtube-vj/{subpath}"
 
     headers = {key: value for key, value in request.headers if key != "Host"}
@@ -130,10 +144,10 @@ def proxy(subpath):
     }
 
     content = proxied_response.content
-    if subpath == "":
+    if subpath == "projection.html":
         content = content.decode(proxied_response.encoding or "utf-8").replace(
             "</head>",
-            f'  <script src="/mixxx-connector.js"></script>\n  </head>',
+            '  <script src="./assets/js/vj-controller.js"></script>\n  </head>',
         )
 
     response = Response(
