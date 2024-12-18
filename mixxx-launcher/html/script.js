@@ -54,6 +54,15 @@ function onEventSourceMessage(event) {
           chData.duration * (1 - chData.playposition)
         );
         break;
+      case "beat_closest":
+        const bpmElem = deck.querySelector(".bpm-info");
+        bpmElem.classList.remove("beat");
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            bpmElem.classList.add("beat");
+          });
+        });
+        break;
       case "bpm":
         document.querySelector(`#ch${ch} .bpm`).innerText =
           data.value.toFixed(1);

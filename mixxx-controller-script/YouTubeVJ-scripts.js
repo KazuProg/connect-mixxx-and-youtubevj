@@ -8,11 +8,13 @@ YouTubeVJ.init = function () {
   engine.connectControl("[Channel1]", "play", YouTubeVJ.update);
   engine.connectControl("[Channel1]", "bpm", YouTubeVJ.update);
   engine.connectControl("[Channel1]", "playposition", YouTubeVJ.update);
+  engine.connectControl("[Channel1]", "beat_closest", YouTubeVJ.update);
 
   engine.connectControl("[Channel2]", "track_loaded", YouTubeVJ.update);
   engine.connectControl("[Channel2]", "play", YouTubeVJ.update);
   engine.connectControl("[Channel2]", "bpm", YouTubeVJ.update);
   engine.connectControl("[Channel2]", "playposition", YouTubeVJ.update);
+  engine.connectControl("[Channel2]", "beat_closest", YouTubeVJ.update);
 
   engine.connectControl("[Master]", "crossfader", YouTubeVJ.update);
 };

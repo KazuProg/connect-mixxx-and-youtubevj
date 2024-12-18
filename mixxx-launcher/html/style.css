@@ -44,6 +44,23 @@ body {
   text-align: center;
 }
 
+.deck > .bpm-info.beat {
+  animation: beat 0.2s ease-out;
+}
+
+@keyframes beat {
+  from {
+    background: radial-gradient(
+      circle,
+      var(--accent-bg-color) 30%,
+      transparent 70%
+    );
+  }
+  to {
+    background: radial-gradient(circle, transparent 30%, transparent 70%);
+  }
+}
+
 .deck > .bpm-info .bpm {
   font-size: 2rem;
 }
